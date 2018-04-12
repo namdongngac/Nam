@@ -11,48 +11,55 @@ struct Pos2D{
 	char s[20];
 	int x,y;
 	int ox,oy;
+	int hp;
 };
 
 int ConsoleW=25,ConsoleH=25;
 bool endgame;
-int score,life,shield,Ultimate,HP_Fly2;
+bool sumBoss;
+int score,life,shield;
 Pos2D Plane;
 Pos2D Fly1[30];
-Pos2D Fly2[20];
 Pos2D Bullet[25];
 Pos2D BulletFly[30];
 Pos2D Boss;
-Pos2D Ulti;
-Pos2D item_life[5];
-Pos2D item_ulti[3];
+Pos2D item_life;
 int i,j,jz,k,jk,jg,flyshoot;
-int iBullet,iFly1,iFly2,iBulletFly;
+int iBullet,iFly1,iBulletFly;
 int Count,CountFly;
 
 //khoi tao mot vai gia tri ban dau
 void init(){
 	endgame=false;
+	sumBoss=false;
 	Plane.y=ConsoleH-1; Plane.x=ConsoleW/2;
 	Boss.x=rand()%ConsoleW-12; Boss.y=0;
-	score=0,life=3,shield=0,Ultimate=3,HP_Fly2=4;
+	score=0,life=3,shield=10000,Boss.hp=20;
 	j=0;jz=0;flyshoot=0;k=0,jg=0;
-	iBullet=0; iFly1=0 ;iFly2=0;
+	iBullet=0; iFly1=0 ;
 	Count=1;CountFly=1;
 }
 
-//ve may bay
+//khoi tao may bay
 void drawPlane(){
 	SetColor(2);
 	gotoxy(Plane.x,Plane.y);
 	cout<<">)^(<";
 }
+//khoi tao dan cua may bat
+void drawBullet(){
+	for(int j=0;j<30;j++){
+		strcpy(Bullet[j].s,"|");
+	}
+}
+//khoi tao dan cua Boss
 void drawBulletFly(){
 	SetColor(9);
 	for(i=0;i<30;i++){
 		strcpy(BulletFly[i].s,"vv");
 	}
 }
-//ve ruoi loai 1
+//khoi tao ruoi
 void drawFly1(){
 	for(int j=0;j<30;j++){
 		strcpy(Fly1[j].s,"}0{");
@@ -75,9 +82,34 @@ void drawFly1(){
 			gotoxy(Fly1[i].x,Fly1[i].y);
 			cout<<Fly1[i].s;
 		}
-	}	
+	}
+	for(i=0;i<40;i++){
+			if(((Plane.x == Fly1[i].x||Plane.x+1 == Fly1[i].x||Plane.x+2 == Fly1[i].x||Plane.x+3 == Fly1[i].x||Plane.x+4 == Fly1[i].x)||
+			(Plane.x == Fly1[i].x+1||Plane.x+1 == Fly1[i].x+1||Plane.x+2 == Fly1[i].x+1||Plane.x+3 == Fly1[i].x+1||Plane.x+4 == Fly1[i].x+1)||
+			(Plane.x == Fly1[i].x+2||Plane.x+1 == Fly1[i].x+2||Plane.x+2 == Fly1[i].x+2||Plane.x+3 == Fly1[i].x+2||Plane.x+4 == Fly1[i].x+2))&&Plane.y == Fly1[i].y){
+				score++;
+				Fly1[i].x = 30; 
+    			Fly1[i].y = -1;
+				life--;
+				for(i=0;i<shield;i++){
+					shield--;
+					
+					
+				
+				}
+				if(shield>0){
+					gotoxy(Plane.x,Plane.y-1);
+					cout<<"=====";
+				}
+					
+				
+				
+				if(life==0)endgame=true;
+			
+			}
+		}	
 }
-//ve Boss
+//khoi tao Boss
 void drawBoss(){
 	strcpy(Boss.s,"=|=[]=|=");	
 	SetColor(5);
@@ -121,48 +153,23 @@ void drawBoss(){
 				BulletFly[i].x=ConsoleW;
 				BulletFly[i].y=-1;
 				life--;
+				for(i=0;i<shield;i++){
+					shield--;
+				}
+				if(shield>0){
+					gotoxy(Plane.x,Plane.y-1);
+					cout<<"=====";
+				}
 				if(life==0)endgame=true;
+				
 			}
 	}
 		
 		
 	
 }
-//ve ruoi laoi 2
-void drawFly2(){
-	for(int j=0;j<20;j++){
-		strcpy(Fly2[j].s,">V<");
-	}	
-	int ran=rand()%20;
-	if(ran%20==0){
-		Fly2[iFly2].x=rand()%ConsoleW-1; Fly2[iFly2].y=0;
-		iFly2++;
-		
-	}
-	jz++;
-	if(iFly2==19)iFly2=0;
-	for(i=0;i<20;i++){
-		if(jz%7==0){
-			if(Fly2[i].y>=0){
-				Fly2[i].y++;
-			}
-		}
-		if(Fly2[i].y>=0&&Fly2[i].y<=ConsoleH){
-			SetColor(7);
-			gotoxy(Fly2[i].x,Fly2[i].y);
-			cout<<Fly2[i].s;
-		}
-	}
-}
 
-//ve dan
-void drawBullet(){
-	for(int j=0;j<30;j++){
-		strcpy(Bullet[j].s,"|");
-	}
-}
-
-//ve man hinh game
+//khoi tao man hinh game
 void drawgame(){
 	clrscr();
 	SetColor(6);
@@ -172,8 +179,7 @@ void drawgame(){
 	}
 	drawPlane();
     drawFly1();
-    if(score>=50)drawFly2();
-    if(score>=5)drawBoss();
+    if(score>0&&score%10==0)sumBoss=true;
     drawBulletFly();
     drawBullet();
     SetColor(6);
@@ -182,9 +188,26 @@ void drawgame(){
     gotoxy(ConsoleW+10,ConsoleH/2+1);
     cout<<"Life: ";
     for(int h=0;h<life;h++)cout<<(char)3<<" ";
-    gotoxy(ConsoleW+10,ConsoleH/2+2);
-    cout<<"Ultimate: ";
-    for(int y=0;y<Ultimate;y++)cout<<(char)4<<" ";
+    if(checkKey(KEY_ESC))endgame=true;
+}
+//khoi tao man hinh danh Boss
+void drawgameBoss(){
+	clrscr();
+	SetColor(6);
+	for(int i=0;i<ConsoleH-1;i++){
+		gotoxy(ConsoleW+4,i);
+		cout<<(char)179;
+	}
+	drawPlane();
+    drawBoss();
+    drawBulletFly();
+    drawBullet();
+    SetColor(6);
+    gotoxy(ConsoleW+10, ConsoleH/2);
+    cout<<"Score: "<<score*100;
+    gotoxy(ConsoleW+10,ConsoleH/2+1);
+    cout<<"Life: ";
+    for(int h=0;h<life;h++)cout<<(char)3<<" ";
     if(checkKey(KEY_ESC))endgame=true;
 }
 
@@ -239,102 +262,54 @@ void shoot(){
 				Bullet[i].x=ConsoleW;
 				Bullet[i].y=-1;
 				score++;
-				Fly1[n].x = 0; 
+				Fly1[n].x = 30; 
     			Fly1[n].y = -1;
 			}
 		}
 		//kiem tra dan voi ruoi loai 2
-		for(int n=0;n<20;n++){
-			if(((Bullet[i].x-Fly2[n].x)>=0&&(Bullet[i].x-Fly2[n].x)<=2 )&& Bullet[i].y == Fly2[n].y){
-				Bullet[i].x=ConsoleW;
-				Bullet[i].y=-1;
-				score+=2;
-				Fly2[n].x = 0; 
-    			Fly2[n].y = -1;
-			}
-		}
 		//kiem tra dan voi Boss
 		if(((Bullet[i].x-Boss.x)>=0&&(Bullet[i].x-Boss.x)<=7 )&& Bullet[i].y == Boss.y){
 			Bullet[i].x=ConsoleW;
 			Bullet[i].y=-1;
-			score+=2;
-			Boss.x = 0; 
-    		Boss.y = -1;
+			
+			Boss.hp--;
+			if(Boss.hp<=0){
+				Boss.x = 0; 
+    			Boss.y = -1;
+				score+=10;
+				Boss.hp=20;
+			}
+			
 		}
 		
 	}
 	
 	
 }
-//ban chum nang luong
-void shoot_Ultimate(){
-	jg++;
-	if(Ultimate>0&&jg%10==0){
-		if(checkKey(KEY_S)){
-			Ulti.x=Plane.x;
-			Ulti.y=Plane.y-1;
-			while(Ulti.y>=0){
-				gotoxy(Ulti.x,Ulti.y);
-				cout<<"|||||";
-				Ulti.y--;
-				//kiem tra Ulti voi ruoi loai 1
-				for(int n=0;n<30;n++){
-					if(((Ulti.x == Fly1[n].x || Ulti.x == Fly1[n].x+1 || Ulti.x == Fly1[n].x+2)||
-						(Ulti.x+1 == Fly1[n].x || Ulti.x+1 == Fly1[n].x+1 || Ulti.x+1 == Fly1[n].x+2)||
-						(Ulti.x+2 == Fly1[n].x || Ulti.x+2 == Fly1[n].x+1 || Ulti.x+2 == Fly1[n].x+2)||
-						(Ulti.x+3 == Fly1[n].x || Ulti.x+3 == Fly1[n].x+1 || Ulti.x+3 == Fly1[n].x+2)||
-						(Ulti.x+4 == Fly1[n].x || Ulti.x+4 == Fly1[n].x+1 || Ulti.x+4 == Fly1[n].x+2))&& Ulti.y == Fly1[n].y){
-							score++;
-							Fly1[n].x = 0; 
-    						Fly1[n].y = -1;
-						}
-				}
-				//kiem tra Ulti voi ruoi loai 2
-				for(int n=0;n<20;n++){
-					if(((Ulti.x == Fly2[n].x || Ulti.x == Fly2[n].x+1 || Ulti.x == Fly2[n].x+2)||
-						(Ulti.x+1 == Fly2[n].x || Ulti.x+1 == Fly2[n].x+1 || Ulti.x+1 == Fly2[n].x+2)||
-						(Ulti.x+2 == Fly2[n].x || Ulti.x+2 == Fly2[n].x+1 || Ulti.x+2 == Fly2[n].x+2)||
-						(Ulti.x+3 == Fly2[n].x || Ulti.x+3 == Fly2[n].x+1 || Ulti.x+3 == Fly2[n].x+2)||
-						(Ulti.x+4 == Fly2[n].x || Ulti.x+4 == Fly2[n].x+1 || Ulti.x+4 == Fly2[n].x+2))&& Ulti.y == Fly2[n].y){
-						HP_Fly2--;
-							if(HP_Fly2<=0){
-								score+=2;
-								Fly2[n].x = 0; 
-    							Fly2[n].y = -1;
-							}
-						
-						}
-				}	
-			}
-			Ultimate--;
-			
-		}
-	}
-	
-}	
+
 //ham main
 int main(){
 	resetgame:;
+	clrscr();
 	ShowCur(false);
 	init();
 	srand(time(NULL));
-	
+	reset:;
 	while(!endgame){	
 		drawgame();
 		controlPlane();
 		shoot();
-		shoot_Ultimate();
-		for(i=0;i<40;i++){
-			if(((Plane.x == Fly1[i].x||Plane.x+1 == Fly1[i].x||Plane.x+2 == Fly1[i].x||Plane.x+3 == Fly1[i].x||Plane.x+4 == Fly1[i].x)||
-			(Plane.x == Fly1[i].x+1||Plane.x+1 == Fly1[i].x+1||Plane.x+2 == Fly1[i].x+1||Plane.x+3 == Fly1[i].x+1||Plane.x+4 == Fly1[i].x+1)||
-			(Plane.x == Fly1[i].x+2||Plane.x+1 == Fly1[i].x+2||Plane.x+2 == Fly1[i].x+2||Plane.x+3 == Fly1[i].x+2||Plane.x+4 == Fly1[i].x+2))&&Plane.y == Fly1[i].y){
-				score++;
-				Fly1[i].x = 0; 
-    			Fly1[i].y = -1;
-				life--;
-				if(life==0)endgame=true;
-			
-			}
+		if(sumBoss)	break;
+		Sleep(25);
+	}
+	while(!endgame){
+		drawgameBoss();
+		controlPlane();
+		shoot();
+		if(Boss.hp<=0){
+			Boss.hp=20;
+			sumBoss=false;
+			goto reset;
 		}
 		
 		Sleep(25);
